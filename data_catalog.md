@@ -313,29 +313,24 @@ ORDER BY c_dig1desc, c_dig2desc, c_dig3desc;
 •	Indexes are created on columns (c_dig1desc, c_dig2desc, c_dig3desc, vacbldg) used in filtering, joining, and grouping operations.
 
 •	Purpose: Indexes enhance query performance by allowing the database engine to quickly locate relevant rows based on these indexed columns. They act as pointers to speed up data retrieval.
+
 **Reasoning for Each Index:**
-•	CREATE INDEX ON landuse_cleanup (c_dig1desc). <br />
 
-   o	Reasoning: This index optimizes filtering operations based on the c_dig1desc column. <br />
+• CREATE INDEX ON landuse_cleanup (c_dig1desc). <br />
+&nbsp;&nbsp;o Reasoning: This index optimizes filtering operations based on the c_dig1desc column. <br />
+&nbsp;&nbsp;o Likely Usage: If queries frequently filter or join based on the first-level description of land use (c_dig1desc), this index will significantly speed up those operations. <br />
 
-   o	Likely Usage: If queries frequently filter or join based on the first-level description of land use (c_dig1desc), this index will significantly speed up those operations. <br />
+• CREATE INDEX ON landuse_cleanup (c_dig2desc). <br />
+&nbsp;&nbsp;o Reasoning: This index optimizes filtering operations based on the c_dig2desc column. <br />
+&nbsp;&nbsp;o Likely Usage: If queries often involve filtering or joining data using the second-level description of land use (c_dig2desc), this index will enhance query performance in such scenarios. <br />
 
-•	CREATE INDEX ON landuse_cleanup (c_dig2desc). <br />
+• CREATE INDEX ON landuse_cleanup (c_dig3desc). <br />
+&nbsp;&nbsp;o Reasoning: This index optimizes filtering operations based on the c_dig3desc column. <br />
+&nbsp;&nbsp;o Likely Usage: When queries predominantly filter or join data using the third-level description of land use (c_dig3desc), this index will accelerate these operations. <br />
 
-   o	Reasoning: This index optimizes filtering operations based on the c_dig2desc column. <br />
-
-   o	Likely Usage: If queries often involve filtering or joining data using the second-level description of land use (c_dig2desc), this index will enhance query performance in such scenarios. <br />
-
-•	CREATE INDEX ON landuse_cleanup (c_dig3desc). <br />
-
-   o	Reasoning: This index optimizes filtering operations based on the c_dig3desc column. <br />
-
-   o	Likely Usage: When queries predominantly filter or join data using the third-level description of land use (c_dig3desc), this index will accelerate these operations. <br />
-
-•	CREATE INDEX ON landuse_cleanup (vacbldg). <br />
-   o	Reasoning: This index optimizes filtering operations based on the vacbldg column. <br />
-
-   o	Likely Usage: If queries frequently involve filtering data based on whether a building is vacant or not (vacbldg), this index will improve query performance by efficiently accessing relevant records. <br />
+• CREATE INDEX ON landuse_cleanup (vacbldg). <br />
+&nbsp;&nbsp;o Reasoning: This index optimizes filtering operations based on the vacbldg column. <br />
+&nbsp;&nbsp;o Likely Usage: If queries frequently involve filtering data based on whether a building is vacant or not (vacbldg), this index will improve query performance by efficiently accessing relevant records. <br />
 
 **Overall Impact:**
 These indexes cater to specific columns used in filtering, joining, and possibly grouping operations in the provided queries. By indexing these columns, the code aims to speed up data retrieval and improve query performance where these columns are utilized for filtering or joining conditions.
@@ -353,12 +348,121 @@ CREATE INDEX ON landuse_cleanup (c_dig2desc);
 CREATE INDEX ON landuse_cleanup (c_dig3desc);
 CREATE INDEX ON landuse_cleanup (vacbldg);
 ```
-The action of every agent <br />
-  into the world <br />
-starts <br />
-  from their physical selves. <br />
+### 3.Query Optimizations and Timings
 
-The action of every agent
-  into the world
-starts
-  from their physical selves.
+**Reasoning for Each Index:**
+
+1. Q1: Census Tracts with Lowest Count of Commercial Land Use
+
+•	Queries involve finding the lowest count of commercial land use per census tract.
+
+•	Timings are recorded using EXPLAIN ANALYZE to assess the query performance.
+
+•	Index landuse_cleanup_c_dig1desc_idx is dropped to analyze the impact of indexing on the query.
+
+•	The query filters by lu.c_dig1desc = '2', potentially querying commercial land use.
+
+#### Code
+
+```sql
+--With index: 343.392ms
+EXPLAIN ANALYZE
+SELECT cth.namelsad10, COUNT(lu.*) AS commercial_landuse_count
+FROM censustract cth
+LEFT JOIN landuse_cleanup lu
+ON ST_Intersects(cth.geom, lu.geom)
+WHERE lu.c_dig1desc = '2'
+GROUP BY cth.namelsad10
+ORDER BY commercial_landuse_count asc
+LIMIT 5;
+
+--Without index: 388.411ms
+DROP INDEX landuse_cleanup_c_dig1desc_idx;
+EXPLAIN ANALYZE
+SELECT cth.namelsad10, COUNT(lu.*) AS commercial_landuse_count
+FROM censustract cth
+LEFT JOIN landuse_cleanup lu
+ON ST_Intersects(cth.geom, lu.geom)
+WHERE lu.c_dig1desc = '2'
+GROUP BY cth.namelsad10
+ORDER BY commercial_landuse_count asc
+LIMIT 5;
+
+```
+
+2. Q2: Census Tract with Largest Library Area for Civic/Institutional Land Use
+
+•	Queries aim to find the census tract with the largest total area designated as a library.
+
+•	Timings are noted using EXPLAIN ANALYZE before and after dropping index landuse_cleanup_c_dig3desc_idx.
+
+•	This query filters by lu.c_dig3desc = '414', presumably representing library areas.
+
+
+#### Code
+
+```sql
+--With index: 586.362ms
+EXPLAIN ANALYZE
+SELECT cth.namelsad10, 
+SUM(ST_Area(ST_Intersection(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272)))) AS total_library_area_m²
+FROM censustract cth
+LEFT JOIN landuse_cleanup lu
+ON ST_Intersects(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272))
+WHERE lu.c_dig3desc = '414'
+GROUP BY cth.namelsad10
+ORDER BY total_library_area_m² desc
+LIMIT 1;
+
+--Without index: 606.061ms
+DROP INDEX landuse_cleanup_c_dig3desc_idx;
+EXPLAIN ANALYZE
+SELECT cth.namelsad10, 
+SUM(ST_Area(ST_Intersection(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272)))) AS total_library_area_m²
+FROM censustract cth
+LEFT JOIN landuse_cleanup lu
+ON ST_Intersects(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272))
+WHERE lu.c_dig3desc = '414'
+GROUP BY cth.namelsad10
+ORDER BY total_library_area_m² desc
+LIMIT 1;
+```
+
+3. Q3: Census Tracts Containing Vacant Land Use with Recorded Vacant Buildings
+
+•	Queries aim to find census tracts containing vacant land use with vacant buildings.
+
+•	Timings are recorded using EXPLAIN ANALYZE.
+
+•	Indexes landuse_cleanup_c_dig3desc_idx and landuse_cleanup_vacbldg_idx are dropped to analyze their impact on the query execution time.
+
+#### Code
+
+```sql
+--With index: 214.473ms
+EXPLAIN ANALYZE
+SELECT cth.namelsad10, lu.*
+FROM censustract cth
+JOIN landuse_cleanup lu ON ST_Intersects(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272))
+WHERE 
+lu.c_dig3desc = '911' -- Vacant land
+AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
+
+--Without index: 235.570ms
+DROP INDEX landuse_cleanup_c_dig3desc_idx;
+DROP INDEX landuse_cleanup_vacbldg_idx;
+EXPLAIN ANALYZE
+SELECT cth.namelsad10, lu.*
+FROM censustract cth
+JOIN landuse_cleanup lu ON ST_Intersects(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272))
+WHERE 
+lu.c_dig3desc = '911' -- Vacant land
+AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
+```
+
+### 4.	Impact of Indexing:
+•	By creating and dropping specific indexes before and after executing queries, the code measures the performance difference, indicating how indexing affects query execution times.
+
+•	The EXPLAIN ANALYZE command helps evaluate query execution plans and timings, facilitating a comparative analysis of query performance with and without specific indexes.
+
+•	The code demonstrates a systematic approach to evaluating the impact of indexing on query performance, particularly in the context of spatial data analysis involving census tracts and land use information.
