@@ -63,7 +63,7 @@ Tables named `cdig1desc`, `cdig2desc`, `cdig3desc`, and `vacbldg` are created to
 - Inserts data into intermediate tables (`landuse1`, `landuse2`, `landuse3`) that link the codes with their descriptions.
 - Inserts data into the `parcel` table, which contains information about parcels of land, referencing the `landuse3` table.
 
-## Normalization ETL Code
+### Normalization ETL Code
 
 ```sql
 SET search_path TO term_project, public;
