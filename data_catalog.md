@@ -1,6 +1,6 @@
-**# Milestone 5: Final Report**
-**## Peter Chen**
-**## Topic: Urban Development and Land Use Patterns in Philadelphia**
+# Milestone 5: Final Report
+## Peter Chen
+## Topic: Urban Development and Land Use Patterns in Philadelphia
 
 **Project Overview:**
 
@@ -27,43 +27,43 @@ The third focus revolves around generating a detailed dataset highlighting censu
 1. [Land Use Dataset Metadata](https://metadata.phila.gov/#home/datasetdetails/5543864420583086178c4e74/representationdetails/55438a7f9b989a05172d0cf3/)
 2. [Census Tracts Metadata](https://metadata.phila.gov/#home/datasetdetails/5543867720583086178c4f47/representationdetails/55438aca9b989a05172d0d7a/)
 
-**## Normalization Process and ERD**
+## Normalization Process and ERD
 
 Normalization is about organizing data to reduce redundancy and dependency. The script below achieves this by splitting information into separate tables and using foreign keys to establish relationships between them, ensuring data consistency and eliminating repetitive information.
 
-**### Original Data Table**
+### Original Data Table
 
 The initial data is stored in the table named `landuse`. It contains information about land use categorized by several codes and their respective descriptions.
 
-**### Normalization**
+### Normalization
 
-**#### Cleanup Table Creation**
+#### Cleanup Table Creation
 
 The script starts by creating a cleanup table `landuse_cleanup` by selecting specific columns from the original `landuse` table based on certain conditions and ordering.
 
-**#### Distinct Description Tables**
+#### Distinct Description Tables
 
 Separate tables are created to store distinct codes (`cdig1`, `cdig2`, `cdig3`) along with their descriptions (`cdig1desc`, `cdig2desc`, `cdig3desc`). These tables help in maintaining a clean reference to the codes and their corresponding descriptions.
 
-**#### Intermediate Tables**
+#### Intermediate Tables
 
 Tables `landuse1`, `landuse2`, and `landuse3` are created to handle the relationships between the codes and their descriptions. These tables have foreign key constraints referencing the respective description tables.
 
-**#### Parcel Table**
+#### Parcel Table
 
 A table named `parcel` is created to store parcel information, including geometry (`geom`) related to land use. This table references the `landuse3` table via a foreign key constraint.
 
-**#### Lookup Table**
+#### Lookup Table
 
 Tables named `cdig1desc`, `cdig2desc`, `cdig3desc`, and `vacbldg` are created to store codes for various states of their descriptions.
 
-**#### Data Insertion**
+#### Data Insertion
 
 - The script populates the various description tables (`cdig1desc`, `cdig2desc`, `cdig3desc`, `vacbldg`) with their respective codes and descriptions.
 - Inserts data into intermediate tables (`landuse1`, `landuse2`, `landuse3`) that link the codes with their descriptions.
 - Inserts data into the `parcel` table, which contains information about parcels of land, referencing the `landuse3` table.
 
-**#### Normalization ETL Code**
+### Normalization ETL Code
 
 ```sql
 SET search_path TO term_project, public;
