@@ -316,27 +316,27 @@ ORDER BY c_dig1desc, c_dig2desc, c_dig3desc;
 **Reasoning for Each Index:**
 •	CREATE INDEX ON landuse_cleanup (c_dig1desc).
 
-o	Reasoning: This index optimizes filtering operations based on the c_dig1desc column.
+   o	Reasoning: This index optimizes filtering operations based on the c_dig1desc column.
 
-o	Likely Usage: If queries frequently filter or join based on the first-level description of land use (c_dig1desc), this index will significantly speed up those operations.
+   o	Likely Usage: If queries frequently filter or join based on the first-level description of land use (c_dig1desc), this index will significantly speed up those operations.
 
 •	CREATE INDEX ON landuse_cleanup (c_dig2desc).
 
-o	Reasoning: This index optimizes filtering operations based on the c_dig2desc column.
+   o	Reasoning: This index optimizes filtering operations based on the c_dig2desc column.
 
-o	Likely Usage: If queries often involve filtering or joining data using the second-level description of land use (c_dig2desc), this index will enhance query performance in such scenarios.
+   o	Likely Usage: If queries often involve filtering or joining data using the second-level description of land use (c_dig2desc), this index will enhance query performance in such scenarios.
 
 •	CREATE INDEX ON landuse_cleanup (c_dig3desc).
 
-o	Reasoning: This index optimizes filtering operations based on the c_dig3desc column.
+   o	Reasoning: This index optimizes filtering operations based on the c_dig3desc column.
 
-o	Likely Usage: When queries predominantly filter or join data using the third-level description of land use (c_dig3desc), this index will accelerate these operations.
+   o	Likely Usage: When queries predominantly filter or join data using the third-level description of land use (c_dig3desc), this index will accelerate these operations.
 
 •	CREATE INDEX ON landuse_cleanup (vacbldg).
 
-o	Reasoning: This index optimizes filtering operations based on the vacbldg column.
+   o	Reasoning: This index optimizes filtering operations based on the vacbldg column.
 
-o	Likely Usage: If queries frequently involve filtering data based on whether a building is vacant or not (vacbldg), this index will improve query performance by efficiently accessing relevant records.
+   o	Likely Usage: If queries frequently involve filtering data based on whether a building is vacant or not (vacbldg), this index will improve query performance by efficiently accessing relevant records.
 
 **Overall Impact:**
 These indexes cater to specific columns used in filtering, joining, and possibly grouping operations in the provided queries. By indexing these columns, the code aims to speed up data retrieval and improve query performance where these columns are utilized for filtering or joining conditions.
