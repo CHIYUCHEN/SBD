@@ -279,6 +279,7 @@ JOIN "landuse3" l3 ON l.c_dig3 = l3.cdig3;
 SELECT p.gid, p.cdig3, p.objectid, p.year, p.vacbldg, p.geom, vl.Description AS vacbldg_description
 FROM parcel p
 LEFT JOIN vacbldg vl ON p.vacbldg = vl.vacbldg;
+```
 
 ## Optimization and Analysis
 
@@ -305,6 +306,7 @@ FROM landuse
 WHERE NOT (CAST(c_dig2desc AS VARCHAR(3)) LIKE CONCAT(c_dig1desc, '%')
 AND CAST(c_dig3desc AS VARCHAR(3)) LIKE CONCAT(c_dig2desc, '%'))
 ORDER BY c_dig1desc, c_dig2desc, c_dig3desc;
+```
 
 ### 2.Index Creation
 •	Indexes are created on columns (c_dig1desc, c_dig2desc, c_dig3desc, vacbldg) used in filtering, joining, and grouping operations.
@@ -338,3 +340,4 @@ CREATE INDEX ON landuse_cleanup (c_dig1desc);
 CREATE INDEX ON landuse_cleanup (c_dig2desc);
 CREATE INDEX ON landuse_cleanup (c_dig3desc);
 CREATE INDEX ON landuse_cleanup (vacbldg);
+```
