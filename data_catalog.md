@@ -285,6 +285,7 @@ LEFT JOIN vacbldg vl ON p.vacbldg = vl.vacbldg;
 
 ### 1.Data Normalization and Table Creation
 •	The landuse_cleanup table is created by filtering data from the landuse table based on certain conditions using c_dig1desc, c_dig2desc and c_dig3desc.
+
 •	This table possibly contains refined, normalized, or cleaned-up data compared to the original landuse table. It might have fewer records due to filtering out specific entries.
 
 #### Code
