@@ -280,3 +280,61 @@ SELECT p.gid, p.cdig3, p.objectid, p.year, p.vacbldg, p.geom, vl.Description AS 
 FROM parcel p
 LEFT JOIN vacbldg vl ON p.vacbldg = vl.vacbldg;
 
+## Optimization and Analysis
+
+### 1.Data Normalization and Table Creation
+•	The landuse_cleanup table is created by filtering data from the landuse table based on certain conditions using c_dig1desc, c_dig2desc and c_dig3desc.
+•	This table possibly contains refined, normalized, or cleaned-up data compared to the original landuse table. It might have fewer records due to filtering out specific entries.
+
+#### Code
+
+```sql
+set search_path to term_project, public;
+--original data count: 560,104
+--normalization result: 551,236
+DROP TABLE IF EXISTS landuse_cleanup CASCADE;
+CREATE TABLE landuse_cleanup AS
+SELECT id, geom, c_dig1desc, c_dig2desc, c_dig3desc, vacbldg
+FROM landuse
+WHERE CAST(c_dig2desc AS VARCHAR(3)) LIKE CONCAT(c_dig1desc, '%')
+AND CAST(c_dig3desc AS VARCHAR(3)) LIKE CONCAT(c_dig2desc, '%')
+ORDER BY c_dig1desc, c_dig2desc, c_dig3desc;
+--recheck normalization result: 8,868
+SELECT id, geom, c_dig1desc, c_dig2desc, c_dig3desc, vacbldg
+FROM landuse
+WHERE NOT (CAST(c_dig2desc AS VARCHAR(3)) LIKE CONCAT(c_dig1desc, '%')
+AND CAST(c_dig3desc AS VARCHAR(3)) LIKE CONCAT(c_dig2desc, '%'))
+ORDER BY c_dig1desc, c_dig2desc, c_dig3desc;
+
+### 2.Index Creation
+•	Indexes are created on columns (c_dig1desc, c_dig2desc, c_dig3desc, vacbldg) used in filtering, joining, and grouping operations.
+•	Purpose: Indexes enhance query performance by allowing the database engine to quickly locate relevant rows based on these indexed columns. They act as pointers to speed up data retrieval.
+**Reasoning for Each Index:**
+•	CREATE INDEX ON landuse_cleanup (c_dig1desc).
+o	Reasoning: This index optimizes filtering operations based on the c_dig1desc column.
+o	Likely Usage: If queries frequently filter or join based on the first-level description of land use (c_dig1desc), this index will significantly speed up those operations.
+•	CREATE INDEX ON landuse_cleanup (c_dig2desc).
+o	Reasoning: This index optimizes filtering operations based on the c_dig2desc column.
+o	Likely Usage: If queries often involve filtering or joining data using the second-level description of land use (c_dig2desc), this index will enhance query performance in such scenarios.
+•	CREATE INDEX ON landuse_cleanup (c_dig3desc).
+o	Reasoning: This index optimizes filtering operations based on the c_dig3desc column.
+o	Likely Usage: When queries predominantly filter or join data using the third-level description of land use (c_dig3desc), this index will accelerate these operations.
+•	CREATE INDEX ON landuse_cleanup (vacbldg).
+o	Reasoning: This index optimizes filtering operations based on the vacbldg column.
+o	Likely Usage: If queries frequently involve filtering data based on whether a building is vacant or not (vacbldg), this index will improve query performance by efficiently accessing relevant records.
+
+**Overall Impact:**
+These indexes cater to specific columns used in filtering, joining, and possibly grouping operations in the provided queries. By indexing these columns, the code aims to speed up data retrieval and improve query performance where these columns are utilized for filtering or joining conditions.
+
+The choice to index these columns is that these columns play a crucial role in the filtering or joining conditions within the spatial data context, as evidenced by the queries and the subsequent optimizations.
+
+#### Code
+
+```sql
+--Index Creation:
+--Columns c_dig1desc, c_dig2desc, c_dig3desc, and vacbldg are commonly used in filters and joins. Consider creating indexes on these columns
+SELECT indexname FROM pg_indexes WHERE tablename = 'landuse_cleanup';
+CREATE INDEX ON landuse_cleanup (c_dig1desc);
+CREATE INDEX ON landuse_cleanup (c_dig2desc);
+CREATE INDEX ON landuse_cleanup (c_dig3desc);
+CREATE INDEX ON landuse_cleanup (vacbldg);
