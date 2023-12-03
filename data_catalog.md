@@ -333,6 +333,7 @@ ORDER BY c_dig1desc, c_dig2desc, c_dig3desc;
 &nbsp;&nbsp;o Likely Usage: If queries frequently involve filtering data based on whether a building is vacant or not (vacbldg), this index will improve query performance by efficiently accessing relevant records. <br />
 
 **Overall Impact:**
+
 These indexes cater to specific columns used in filtering, joining, and possibly grouping operations in the provided queries. By indexing these columns, the code aims to speed up data retrieval and improve query performance where these columns are utilized for filtering or joining conditions.
 
 The choice to index these columns is that these columns play a crucial role in the filtering or joining conditions within the spatial data context, as evidenced by the queries and the subsequent optimizations.
