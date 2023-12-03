@@ -13,11 +13,18 @@ The second aspect involves scrutinizing civic/institutional land use, particular
 The third focus revolves around generating a detailed dataset highlighting census tracts containing vacant land. This dataset goes a step further by providing information on the types of vacant buildings within those tracts. The intention is to provide a nuanced understanding of the distribution and characteristics of vacant land within a specified geographic area. This information is considered valuable for urban planning, development, and policy-making, empowering stakeholders to make more informed decisions regarding the utilization of vacant land and the development potential of specific areas.
 
 **Questions:**
+
 1. What is/are the census tract(s) with the lowest count of commercial land use, and what is the respective count of commercial land use in each of these tracts?
-   
+
+<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Commercial%20Land%20Use%20Count%20by%20Census%20Tract.jpg" alt="Commercial Land Use Count" width="300">
+
 2. What is the census tract with the largest total area (in square meters) designated as Civic/Institutional land use, specifically for category library area?
-   
-3. Which census tracts contain vacant landuse with vacant buildings recorded within these tracts?
+
+<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Largest%20Library%20Land%20Use%20Area%20by%20Census%20Tract.jpg" alt="Largest Library Land Use Area" width="300">
+
+3. Which census tracts contain vacant land use with vacant buildings recorded within these tracts?
+
+<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Vacant%20Land%20by%20Census%20Tract.jpg" alt="Vacant Land by Census Tract" width="300">
 
 **Data source:**
 1. [Land Use Dataset - OpenDataPhilly](https://opendataphilly.org/datasets/land-use/)
