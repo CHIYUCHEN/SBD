@@ -287,6 +287,8 @@ SELECT p.gid, p.cdig3, p.objectid, p.year, p.vacbldg, p.geom, vl.Description AS 
 FROM parcel p
 LEFT JOIN vacbldg vl ON p.vacbldg = vl.vacbldg;
 ```
+### ERD
+<img src="https://github.com/CHIYUCHEN/SBD/raw/main/ERD.jpg" alt="ERD">
 
 ## Optimization and Analysis
 
