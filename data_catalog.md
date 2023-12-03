@@ -354,14 +354,10 @@ CREATE INDEX ON landuse_cleanup (vacbldg);
 **Reasoning for Each Index:**
 
 1. Q1: Census Tracts with Lowest Count of Commercial Land Use
-
-•	Queries involve finding the lowest count of commercial land use per census tract.
-
-•	Timings are recorded using EXPLAIN ANALYZE to assess the query performance.
-
-•	Index landuse_cleanup_c_dig1desc_idx is dropped to analyze the impact of indexing on the query.
-
-•	The query filters by lu.c_dig1desc = '2', potentially querying commercial land use.
+&nbsp;&nbsp;•	Queries involve finding the lowest count of commercial land use per census tract. <br />
+&nbsp;&nbsp;•	Timings are recorded using EXPLAIN ANALYZE to assess the query performance. <br />
+&nbsp;&nbsp;•	Index landuse_cleanup_c_dig1desc_idx is dropped to analyze the impact of indexing on the query. <br />
+&nbsp;&nbsp;•	The query filters by lu.c_dig1desc = '2', potentially querying commercial land use. <br />
 
 #### Code
 
@@ -392,13 +388,9 @@ LIMIT 5;
 ```
 
 2. Q2: Census Tract with Largest Library Area for Civic/Institutional Land Use
-
-•	Queries aim to find the census tract with the largest total area designated as a library.
-
-•	Timings are noted using EXPLAIN ANALYZE before and after dropping index landuse_cleanup_c_dig3desc_idx.
-
-•	This query filters by lu.c_dig3desc = '414', presumably representing library areas.
-
+&nbsp;&nbsp;•	Queries aim to find the census tract with the largest total area designated as a library.. <br />
+&nbsp;&nbsp;•	Timings are noted using EXPLAIN ANALYZE before and after dropping index landuse_cleanup_c_dig3desc_idx. <br />
+&nbsp;&nbsp;•	This query filters by lu.c_dig3desc = '414', presumably representing library areas. <br />
 
 #### Code
 
@@ -430,12 +422,9 @@ LIMIT 1;
 ```
 
 3. Q3: Census Tracts Containing Vacant Land Use with Recorded Vacant Buildings
-
-•	Queries aim to find census tracts containing vacant land use with vacant buildings.
-
-•	Timings are recorded using EXPLAIN ANALYZE.
-
-•	Indexes landuse_cleanup_c_dig3desc_idx and landuse_cleanup_vacbldg_idx are dropped to analyze their impact on the query execution time.
+&nbsp;&nbsp;•	Queries aim to find census tracts containing vacant land use with vacant buildings. <br />
+&nbsp;&nbsp;•	Timings are recorded using EXPLAIN ANALYZE. <br />
+&nbsp;&nbsp;•	Indexes landuse_cleanup_c_dig3desc_idx and landuse_cleanup_vacbldg_idx are dropped to analyze their impact on the query execution time. <br />
 
 #### Code
 
@@ -462,8 +451,6 @@ AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
 ```
 
 ### 4.	Impact of Indexing:
-•	By creating and dropping specific indexes before and after executing queries, the code measures the performance difference, indicating how indexing affects query execution times.
-
-•	The EXPLAIN ANALYZE command helps evaluate query execution plans and timings, facilitating a comparative analysis of query performance with and without specific indexes.
-
-•	The code demonstrates a systematic approach to evaluating the impact of indexing on query performance, particularly in the context of spatial data analysis involving census tracts and land use information.
+&nbsp;&nbsp;•	By creating and dropping specific indexes before and after executing queries, the code measures the performance difference, indicating how indexing affects query execution times. <br />
+&nbsp;&nbsp;•	The EXPLAIN ANALYZE command helps evaluate query execution plans and timings, facilitating a comparative analysis of query performance with and without specific indexes. <br />
+&nbsp;&nbsp;•	The code demonstrates a systematic approach to evaluating the impact of indexing on query performance, particularly in the context of spatial data analysis involving census tracts and land use information.. <br />
