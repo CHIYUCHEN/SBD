@@ -80,6 +80,7 @@ Tables named `cdig1desc`, `cdig2desc`, `cdig3desc`, and `vacbldg` are created to
 
 ```sql
 SET search_path TO term_project, public;
+
 -- Create a cleanup table to store the original table landuse
 DROP TABLE IF EXISTS landuse_cleanup CASCADE;
 CREATE TABLE landuse_cleanup AS
@@ -93,6 +94,7 @@ CREATE TABLE cdig1desc (
 cdig1 Integer PRIMARY KEY,
 Description VARCHAR(50)
 );
+
 INSERT INTO cdig1desc (cdig1, Description)
 VALUES 
 (1, 'Residential'),
@@ -110,6 +112,7 @@ cdig1 Integer,
 cdig1desc VARCHAR,
 PRIMARY KEY (cdig1)
 );
+
 INSERT INTO landuse1 (cdig1, cdig1desc)
 SELECT DISTINCT c_dig1::int, c_dig1desc::VARCHAR
 FROM landuse_cleanup l
@@ -123,6 +126,7 @@ CREATE TABLE cdig2desc (
 cdig2 Integer PRIMARY KEY,
 Description VARCHAR(50)
 );
+
 INSERT INTO cdig2desc (cdig2, Description)
 VALUES 
 (11, 'Residential Low'),
@@ -152,6 +156,7 @@ CONSTRAINT "FK_landuse2.cdig1"
 FOREIGN KEY ("cdig1")
 REFERENCES "landuse1"("cdig1")
 );
+
 INSERT INTO landuse2 (cdig1, cdig1desc, cdig2, cdig2desc)
 SELECT DISTINCT ON (c_dig2)
 l1.cdig1, l1.cdig1desc,
@@ -168,6 +173,7 @@ CREATE TABLE cdig3desc (
 cdig3 INT PRIMARY KEY,
 Description VARCHAR(100)
 );
+
 INSERT INTO cdig3desc (cdig3, Description)
 VALUES 
 (111, 'Residential Detached'),
@@ -249,6 +255,7 @@ CONSTRAINT "FK_landuse3.cdig2"
 FOREIGN KEY ("cdig2")
 REFERENCES "landuse2"("cdig2")
 );
+
 INSERT INTO landuse3 (cdig2, cdig2desc, cdig3, cdig3desc)
 SELECT DISTINCT ON (l.c_dig3)
 l.c_dig2::int, l.c_dig2desc::VARCHAR,
@@ -256,6 +263,7 @@ COALESCE(l.c_dig3::int, -1), COALESCE(l.c_dig3desc::VARCHAR, '')
 FROM landuse_cleanup l
 JOIN landuse2 l2 ON l2.cdig2 = l.c_dig2
 ORDER BY l.c_dig3;
+
 -- Combine the tables using a JOIN operation
 SELECT l3.cdig2, l3.cdig3, l3.cdig2desc, l3.cdig3desc, c3.Description AS cdig3desc_description
 FROM landuse3 l3
@@ -265,6 +273,7 @@ CREATE TABLE vacbldg (
 vacbldg CHAR(1) PRIMARY KEY,
 Description VARCHAR(50)
 );
+
 INSERT INTO vacbldg (vacbldg, Description)
 VALUES 
 ('1', 'Fully vacant building'),
@@ -285,6 +294,7 @@ CONSTRAINT "fk_parcel_cdig3" -- Corrected constraint name
 FOREIGN KEY ("cdig3")
 REFERENCES "landuse3"("cdig3")
 );
+
 INSERT INTO "parcel" ("gid", "cdig3", "objectid", "year", "vacbldg", "geom")
 SELECT l.id, l.c_dig3, l.objectid, l.year, l.vacbldg, ST_SetSRID(l.geom, 2272) -- Assuming NULL for the geom column
 FROM "landuse_cleanup" l
@@ -292,6 +302,7 @@ JOIN "landuse3" l3 ON l.c_dig3 = l3.cdig3;
 SELECT p.gid, p.cdig3, p.objectid, p.year, p.vacbldg, p.geom, vl.Description AS vacbldg_description
 FROM parcel p
 LEFT JOIN vacbldg vl ON p.vacbldg = vl.vacbldg;
+
 ```
 ### ERD
 <img src="https://github.com/CHIYUCHEN/SBD/raw/main/ERD.jpg" alt="ERD">
