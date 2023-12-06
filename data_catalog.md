@@ -379,8 +379,8 @@ CREATE INDEX ON landuse_cleanup (vacbldg);
 
 **Reasoning for Each Index:**
 
-1. Q1: Census Tracts with Lowest Count of Commercial Land Use
-
+1. Census Tracts with Lowest Count of Commercial Land Use
+   
 &nbsp;&nbsp;•	Queries involve finding the lowest count of commercial land use per census tract. <br />
 &nbsp;&nbsp;•	Timings are recorded using EXPLAIN ANALYZE to assess the query performance. <br />
 &nbsp;&nbsp;•	Index landuse_cleanup_c_dig1desc_idx is dropped to analyze the impact of indexing on the query. <br />
@@ -414,8 +414,8 @@ LIMIT 5;
 
 ```
 
-2. Q2: Census Tract with Largest Library Area for Civic/Institutional Land Use
-
+2. Census Tract with Largest Library Area for Civic/Institutional Land Use
+   
 &nbsp;&nbsp;•	Queries aim to find the census tract with the largest total area designated as a library.. <br />
 &nbsp;&nbsp;•	Timings are noted using EXPLAIN ANALYZE before and after dropping index landuse_cleanup_c_dig3desc_idx. <br />
 &nbsp;&nbsp;•	This query filters by lu.c_dig3desc = '414', presumably representing library areas. <br />
@@ -449,8 +449,8 @@ ORDER BY total_library_area_m² desc
 LIMIT 1;
 ```
 
-3. Q3: Census Tracts Containing Vacant Land Use with Recorded Vacant Buildings
-
+3. Census Tracts Containing Vacant Land Use with Recorded Vacant Buildings
+   
 &nbsp;&nbsp;•	Queries aim to find census tracts containing vacant land use with vacant buildings. <br />
 &nbsp;&nbsp;•	Timings are recorded using EXPLAIN ANALYZE. <br />
 &nbsp;&nbsp;•	Indexes landuse_cleanup_c_dig3desc_idx and landuse_cleanup_vacbldg_idx are dropped to analyze their impact on the query execution time. <br />
