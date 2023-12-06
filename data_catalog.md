@@ -16,19 +16,54 @@ The third focus revolves around generating a detailed dataset highlighting censu
 
 1. What is/are the census tract(s) with the lowest count of commercial land use, and what is the respective count of commercial land use in each of these tracts?
 
-   Visualization in QGIS:
+#### Code
+
+```sql
+SELECT cth.namelsad10, COUNT(lu.*) AS commercial_landuse_count
+FROM censustract cth
+LEFT JOIN landuse_cleanup lu
+ON ST_Intersects(cth.geom, lu.geom)
+WHERE lu.c_dig1desc = '2'
+GROUP BY cth.namelsad10
+ORDER BY commercial_landuse_count asc
+LIMIT 5;
+```
+#### Visualization in QGIS
 
 <img src="https://github.com/CHIYUCHEN/SBD/raw/main/Commercial%20Land%20Use%20Count%20by%20Census%20Tract.jpg" alt="Commercial Land Use Count" width="500">
 
 2. What is the census tract with the largest total area (in square meters) designated as Civic/Institutional land use, specifically for category library area?
 
-   Visualization in QGIS:
+#### Code
+
+```sql
+SELECT cth.namelsad10, 
+SUM(ST_Area(ST_Intersection(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272)))) AS total_library_area_m²
+FROM censustract cth
+LEFT JOIN landuse_cleanup lu
+ON ST_Intersects(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272))
+WHERE lu.c_dig3desc = '414'
+GROUP BY cth.namelsad10
+ORDER BY total_library_area_m² desc
+LIMIT 1;
+```
+#### Visualization in QGIS
 
 <img src="https://github.com/CHIYUCHEN/SBD/raw/main/Largest%20Library%20Land%20Use%20Area%20by%20Census%20Tract.jpg" alt="Largest Library Land Use Area" width="500">
 
 3. Which census tracts contain vacant land use with vacant buildings recorded within these tracts?
 
-   Visualization in QGIS:
+#### Code
+
+```sql
+SELECT cth.namelsad10, lu.*
+FROM censustract cth
+JOIN landuse_cleanup lu ON ST_Intersects(ST_Transform(cth.geom, 2272), ST_Transform(lu.geom, 2272))
+WHERE 
+lu.c_dig3desc = '911' -- Vacant land
+AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
+```
+#### Visualization in QGIS
 
 <img src="https://github.com/CHIYUCHEN/SBD/raw/main/Vacant%20Land%20by%20Census%20Tract.jpg" alt="Vacant Land by Census Tract" width="500">
 
