@@ -482,4 +482,4 @@ AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
 ### 4.	Impact of Indexing:
 &nbsp;&nbsp;•	By creating and dropping specific indexes before and after executing queries, the code measures the performance difference, indicating how indexing affects query execution times. <br />
 &nbsp;&nbsp;•	The EXPLAIN ANALYZE command helps evaluate query execution plans and timings, facilitating a comparative analysis of query performance with and without specific indexes. <br />
-&nbsp;&nbsp;•	The code demonstrates a systematic approach to evaluating the impact of indexing on query performance, particularly in the context of spatial data analysis involving census tracts and land use information.. <br />
+&nbsp;&nbsp;•	The code demonstrates a systematic approach to evaluating the impact of indexing on query performance, particularly in the context of spatial data analysis involving census tracts and land use information. <br />
