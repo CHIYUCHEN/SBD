@@ -89,27 +89,18 @@ The initial data is stored in the table named `landuse`. It contains information
 
 The script starts by creating a cleanup table `landuse_cleanup` by selecting specific columns from the original `landuse` table based on certain conditions and ordering.
 
-#### Distinct Description Tables
+#### Lookup Tables
 
-Separate tables are created to store distinct codes (`cdig1`, `cdig2`, `cdig3`) along with their descriptions (`cdig1desc`, `cdig2desc`, `cdig3desc`). These tables help in maintaining a clean reference to the codes and their corresponding descriptions.
-
-#### Intermediate Tables
-
-Tables `landuse1`, `landuse2`, and `landuse3` are created to handle the relationships between the codes and their descriptions. These tables have foreign key constraints referencing the respective description tables.
+Tables `landuse1`, `landuse2`, and `landuse3` are created to handle the relationships between the codes and their descriptions.
 
 #### Parcel Table
 
-A table named `parcel` is created to store parcel information, including geometry (`geom`) related to land use. This table references the `landuse3` table via a foreign key constraint.
-
-#### Lookup Table
-
-Tables named `cdig1desc`, `cdig2desc`, `cdig3desc`, and `vacbldg` are created to store codes for various states of their descriptions.
+A table named `parcel` is created to store parcel information, including geometry (`geom`) related to land use.
 
 #### Data Insertion
 
-- The script populates the various description tables (`cdig1desc`, `cdig2desc`, `cdig3desc`, `vacbldg`) with their respective codes and descriptions.
-- Inserts data into intermediate tables (`landuse1`, `landuse2`, `landuse3`) that link the codes with their descriptions.
-- Inserts data into the `parcel` table, which contains information about parcels of land, referencing the `landuse3` table.
+- Inserts data into lookup tables (`landuse1`, `landuse2`, `landuse3`) that link the codes with their descriptions.
+- Inserts data into the `parcel` table, which contains information about parcels of land.
 
 #### Normalization ETL Code
 
@@ -119,15 +110,27 @@ SET search_path TO term_project, public;
 -- Create a cleanup table to store the original table landuse
 DROP TABLE IF EXISTS landuse_cleanup CASCADE;
 CREATE TABLE landuse_cleanup AS
-SELECT id, geom, objectid, year, vacbldg, C_DIG1, C_DIG1DESC, C_DIG2, C_DIG2DESC, C_DIG3, C_DIG3DESC
+SELECT 
+    id, 
+    geom, 
+    objectid, 
+    year, 
+    vacbldg, 
+    C_DIG1, 
+    C_DIG1DESC, 
+    C_DIG2, 
+    C_DIG2DESC, 
+    C_DIG3, 
+    C_DIG3DESC
 FROM landuse
-WHERE CAST(C_DIG2DESC AS VARCHAR(3)) LIKE CONCAT(C_DIG1DESC, '%')
-AND CAST(C_DIG3DESC AS VARCHAR(3)) LIKE CONCAT(C_DIG2DESC, '%')
+WHERE CAST(C_DIG2DESC AS VARCHAR) LIKE CONCAT(C_DIG1DESC, '%')
+  AND CAST(C_DIG3DESC AS VARCHAR) LIKE CONCAT(C_DIG2DESC, '%')
 ORDER BY C_DIG1DESC, C_DIG2DESC, C_DIG3DESC;
+
 DROP TABLE IF EXISTS cdig1desc CASCADE;
 CREATE TABLE cdig1desc (
-cdig1 Integer PRIMARY KEY,
-Description VARCHAR(50)
+    cdig1 Integer PRIMARY KEY,
+    Description VARCHAR
 );
 
 INSERT INTO cdig1desc (cdig1, Description)
@@ -141,202 +144,148 @@ VALUES
 (7, 'Park/Open Space'),
 (8, 'Water'),
 (9, 'Vacant or Other');
+
 DROP TABLE IF EXISTS landuse1 CASCADE;
 CREATE TABLE landuse1 (
-cdig1 Integer,
-cdig1desc VARCHAR,
-PRIMARY KEY (cdig1)
+    cdig1 Integer PRIMARY KEY,
+    cdig1desc VARCHAR
 );
 
 INSERT INTO landuse1 (cdig1, cdig1desc)
-SELECT DISTINCT c_dig1::int, c_dig1desc::VARCHAR
-FROM landuse_cleanup l
-ORDER BY c_dig1;
--- Combine the tables using a JOIN operation
-SELECT l1.cdig1, l1.cdig1desc, c1.Description AS cdig1desc_description
-FROM landuse1 l1
-JOIN cdig1desc c1 ON l1.cdig1 = c1.cdig1;
-DROP TABLE IF EXISTS cdig2desc CASCADE;
-CREATE TABLE cdig2desc (
-cdig2 Integer PRIMARY KEY,
-Description VARCHAR(50)
-);
-
-INSERT INTO cdig2desc (cdig2, Description)
 VALUES 
-(11, 'Residential Low'),
-(12, 'Residential Medium'),
-(13, 'Residential High'),
-(21, 'Commercial Consumer'),
-(22, 'Commercial Business/Professional'),
-(23, 'Commercial Mixed Residential'),
-(31, 'Industrial'),
-(41, 'Civic/Institution'),
-(51, 'Transportation'),
-(61, 'Culture/Amusement'),
-(62, 'Active Recreation'),
-(71, 'Park/Open Space'),
-(72, 'Cemetery'),
-(81, 'Water'),
-(91, 'Vacant'),
-(92, 'Other/Unknown');
+    (1, 'Residential'),
+    (2, 'Commercial'),
+    (3, 'Industrial'),
+    (4, 'Civic/Institution'),
+    (5, 'Transportation'),
+    (6, 'Culture/Recreation'),
+    (7, 'Park/Open Space'),
+    (8, 'Water'),
+    (9, 'Vacant or Other');
+
 DROP TABLE IF EXISTS landuse2 CASCADE;
-CREATE TABLE "landuse2" (
-"cdig1" Integer,
-"cdig2" Integer,
-"cdig1desc" VARCHAR,
-"cdig2desc" VARCHAR,
-PRIMARY KEY ("cdig2"),
-CONSTRAINT "FK_landuse2.cdig1"
-FOREIGN KEY ("cdig1")
-REFERENCES "landuse1"("cdig1")
+CREATE TABLE landuse2 (
+    cdig1 Integer,
+    cdig2 Integer PRIMARY KEY,
+    cdig2desc VARCHAR
 );
 
-INSERT INTO landuse2 (cdig1, cdig1desc, cdig2, cdig2desc)
-SELECT DISTINCT ON (c_dig2)
-l1.cdig1, l1.cdig1desc,
-l.c_dig2::int, l.c_dig2desc::VARCHAR
-FROM landuse_cleanup l
-JOIN landuse1 l1 ON l1.cdig1 = l.c_dig1
-ORDER BY l.c_dig2;
--- Combine the tables using a JOIN operation
-SELECT l2.cdig1, l2.cdig2, l2.cdig1desc, l2.cdig2desc, c2.Description AS cdig2desc_description
-FROM landuse2 l2
-JOIN cdig2desc c2 ON l2.cdig2 = c2.cdig2;
-DROP TABLE IF EXISTS cdig3desc CASCADE;
-CREATE TABLE cdig3desc (
-cdig3 INT PRIMARY KEY,
-Description VARCHAR(100)
-);
-
-INSERT INTO cdig3desc (cdig3, Description)
+INSERT INTO landuse2 (cdig1, cdig2, cdig2desc)
 VALUES 
-(111, 'Residential Detached'),
-(112, 'Residential SemiDetached'),
-(113, 'Residential Condo 1 to 1.5 stry'),
-(119, 'Other RLD'),
-(121, 'Residential Rowhouse'),
-(122, 'Residential Detached Converted to Apts LT 3stry LT 5 units'),
-(123, 'Residential SemiDetached Converted to Apts LT 3stry LT 5 units'),
-(124, 'Residential Rowhouse Converted to Apts LT 3st LT 5 units'),
-(125, 'Apt House or Condo LT 5 units incl Duplex or Quad LT 3stry'),
-(129, 'Other RMD'),
-(131, 'Apt House GT or equal to 5 units'),
-(132, 'Residential Detached or SemiDetached Converted to Apts GT 3stry LT 5 units'),
-(133, 'Residential Rowhouse Converted to Apts or Apts or Condos GT 3stry LT 5 units'),
-(135, 'Hotel Motel'),
-(136, 'Residential Care Facility'),
-(137, 'Dormitory'),
-(138, 'Correctional Facility'),
-(139, 'Other RHD'),
-(211, 'Commercial Store'),
-(212, 'Commercial Food Service and Drinking'),
-(213, 'Commercial Auto'),
-(219, 'Other CC'),
-(221, 'Commercial Office'),
-(222, 'Commercial Service'),
-(229, 'Other CBP'),
-(231, 'Commercial Store or Office with Apts'),
-(232, 'Rowhouse Store or Office with Apts'),
-(233, 'Detached or SemiDetached with Store or Office'),
-(239, 'Other CMR'),
-(311, 'Manufacturing food beverages textiles apparel'),
-(312, 'Manufacturing wood paper printing petroleum chemicals plastics rubber'),
-(313, 'Manufacturing metal machinery computer electronics transp equip furniture'),
-(314, 'Utilities'),
-(315, 'Construction'),
-(316, 'Wholesale Trade'),
-(317, 'Warehousing and Distribution'),
-(318, 'Other production distribution repair maintenance'),
-(319, 'Other Industrial'),
-(411, 'Heath Care'),
-(412, 'Day Care'),
-(413, 'Education'),
-(414, 'Library'),
-(415, 'Courts'),
-(416, 'Public Safety'),
-(417, 'Worship'),
-(418, 'Fraternal Organizations and Social Clubs'),
-(419, 'Other Civic'),
-(511, 'Transportation Street and Sidewalk ROW'),
-(512, 'Transportation Rail ROW Yards Stations'),
-(513, 'Transportation Truck Bus Taxi'),
-(514, 'Transportation Parking'),
-(515, 'Transportation Parking Commercial Mix'),
-(516, 'Transportation Marine'),
-(517, 'Transportation Aviation'),
-(518, 'Transportation Pipeline'),
-(519, 'Other Trans'),
-(611, 'Performing Arts'),
-(612, 'Cultural and Natural History'),
-(613, 'Amusement'),
-(619, 'Other Cultural Amusement'),
-(621, 'Active Recreation'),
-(711, 'Park Open Space'),
-(721, 'Cemetery'),
-(719, 'Other POS'),
-(811, 'Water'),
-(819, 'Other Water'),
-(911, 'Vacant Parcels'),
-(921, 'Other Unknown');
+	(1, 11, 'Residential Low'),
+	(1, 12, 'Residential Medium'),
+	(1, 13, 'Residential High'),
+	(2, 21, 'Commercial Consumer'),
+	(2, 22, 'Commercial Business/Professional'),
+	(2, 23, 'Commercial Mixed Residential'),
+	(3, 31, 'Industrial'),
+	(4, 41, 'Civic/Institution'),
+	(5, 51, 'Transportation'),
+	(6, 61, 'Culture/Amusement'),
+	(6, 62, 'Active Recreation'),
+	(7, 71, 'Park/Open Space'),
+	(7, 72, 'Cemetery'),
+	(8, 81, 'Water'),
+	(9, 91, 'Vacant'),
+	(9, 92, 'Other/Unknown');
+
 DROP TABLE IF EXISTS landuse3 CASCADE;
-CREATE TABLE "landuse3" (
-"cdig2" Integer,
-"cdig3" Integer,
-"cdig2desc" VARCHAR,
-"cdig3desc" VARCHAR,
-PRIMARY KEY ("cdig3"),
-CONSTRAINT "FK_landuse3.cdig2"
-FOREIGN KEY ("cdig2")
-REFERENCES "landuse2"("cdig2")
+CREATE TABLE landuse3 (
+    cdig2 Integer,
+    cdig3 Integer PRIMARY KEY,
+    cdig3desc VARCHAR
 );
 
-INSERT INTO landuse3 (cdig2, cdig2desc, cdig3, cdig3desc)
-SELECT DISTINCT ON (l.c_dig3)
-l.c_dig2::int, l.c_dig2desc::VARCHAR,
-COALESCE(l.c_dig3::int, -1), COALESCE(l.c_dig3desc::VARCHAR, '')
-FROM landuse_cleanup l
-JOIN landuse2 l2 ON l2.cdig2 = l.c_dig2
-ORDER BY l.c_dig3;
-
--- Combine the tables using a JOIN operation
-SELECT l3.cdig2, l3.cdig3, l3.cdig2desc, l3.cdig3desc, c3.Description AS cdig3desc_description
-FROM landuse3 l3
-LEFT JOIN cdig3desc c3 ON l3.cdig3 = c3.cdig3;
-DROP TABLE IF EXISTS vacbldg CASCADE;
-CREATE TABLE vacbldg (
-vacbldg CHAR(1) PRIMARY KEY,
-Description VARCHAR(50)
-);
-
-INSERT INTO vacbldg (vacbldg, Description)
+INSERT INTO landuse3 (cdig2, cdig3, cdig3desc)
 VALUES 
-('1', 'Fully vacant building'),
-('2', 'Partially vacant building'),
-('V', 'Fully vacant building'),
-('P', 'Partially vacant building'),
-(' ', 'No data collected');
+	(11, 111, 'Residential Detached'),
+	(11, 112, 'Residential SemiDetached'),
+	(11, 113, 'Residential Condo 1 to 1.5 stry'),
+	(11, 119, 'Other RLD'),
+	(12, 121, 'Residential Rowhouse'),
+	(12, 122, 'Residential Detached Converted to Apts LT 3stry LT 5 units'),
+	(12, 123, 'Residential SemiDetached Converted to Apts LT 3stry LT 5 units'),
+	(12, 124, 'Residential Rowhouse Converted to Apts LT 3st LT 5 units'),
+	(12, 125, 'Apt House or Condo LT 5 units incl Duplex or Quad LT 3stry'),
+	(12, 129, 'Other RMD'),
+	(13, 131, 'Apt House GT or equal to 5 units'),
+	(13, 132, 'Residential Detached or SemiDetached Converted to Apts GT 3stry LT 5 units'),
+	(13, 133, 'Residential Rowhouse Converted to Apts or Apts or Condos GT 3stry LT 5 units'),
+	(13, 135, 'Hotel Motel'),
+	(13, 136, 'Residential Care Facility'),
+	(13, 137, 'Dormitory'),
+	(13, 138, 'Correctional Facility'),
+	(13, 139, 'Other RHD'),
+	(21, 211, 'Commercial Store'),
+	(21, 212, 'Commercial Food Service and Drinking'),
+	(21, 213, 'Commercial Auto'),
+	(21, 219, 'Other CC'),
+	(22, 221, 'Commercial Office'),
+	(22, 222, 'Commercial Service'),
+	(22, 229, 'Other CBP'),
+	(23, 231, 'Commercial Store or Office with Apts'),
+	(23, 232, 'Rowhouse Store or Office with Apts'),
+	(23, 233, 'Detached or SemiDetached with Store or Office'),
+	(23, 239, 'Other CMR'),
+	(31, 311, 'Manufacturing food beverages textiles apparel'),
+	(31, 312, 'Manufacturing wood paper printing petroleum chemicals plastics rubber'),
+	(31, 313, 'Manufacturing metal machinery computer electronics transp equip furniture'),
+	(31, 314, 'Utilities'),
+	(31, 315, 'Construction'),
+	(31, 316, 'Wholesale Trade'),
+	(31, 317, 'Warehousing and Distribution'),
+	(31, 318, 'Other production distribution repair maintenance'),
+	(31, 319, 'Other Industrial'),
+	(41, 411, 'Heath Care'),
+	(41, 412, 'Day Care'),
+	(41, 413, 'Education'),
+	(41, 414, 'Library'),
+	(41, 415, 'Courts'),
+	(41, 416, 'Public Safety'),
+	(41, 417, 'Worship'),
+	(41, 418, 'Fraternal Organizations and Social Clubs'),
+	(41, 419, 'Other Civic'),
+	(51, 511, 'Transportation Street and Sidewalk ROW'),
+	(51, 512, 'Transportation Rail ROW Yards Stations'),
+	(51, 513, 'Transportation Truck Bus Taxi'),
+	(51, 514, 'Transportation Parking'),
+	(51, 515, 'Transportation Parking Commercial Mix'),
+	(51, 516, 'Transportation Marine'),
+	(51, 517, 'Transportation Aviation'),
+	(51, 518, 'Transportation Pipeline'),
+	(51, 519, 'Other Trans'),
+	(61, 611, 'Performing Arts'),
+	(61, 612, 'Cultural and Natural History'),
+	(61, 613, 'Amusement'),
+	(61, 619, 'Other Cultural Amusement'),
+	(62, 621, 'Active Recreation'),
+	(71, 711, 'Park Open Space'),
+	(72, 721, 'Cemetery'),
+	(71, 719, 'Other POS'),
+	(81, 811, 'Water'),
+	(81, 819, 'Other Water'),
+	(91, 911, 'Vacant Parcels'),
+	(92, 921, 'Other Unknown');
+
 DROP TABLE IF EXISTS parcel CASCADE;
-CREATE TABLE "parcel" (
-"gid" Integer,
-"cdig3" Integer,
-"objectid" Integer,
-"year" Integer,
-"vacbldg" VARCHAR,
-"geom" geometry(MultiPolygon, 2272), -- Corrected syntax for the geom column
-PRIMARY KEY ("gid"),
-CONSTRAINT "fk_parcel_cdig3" -- Corrected constraint name
-FOREIGN KEY ("cdig3")
-REFERENCES "landuse3"("cdig3")
+CREATE TABLE parcel (
+    gid Integer PRIMARY KEY,
+    cdig3 Integer,
+    objectid Integer,
+    year Integer,
+    vacbldg VARCHAR,
+    geom geometry(MultiPolygon, 2272)
 );
 
-INSERT INTO "parcel" ("gid", "cdig3", "objectid", "year", "vacbldg", "geom")
-SELECT l.id, l.c_dig3, l.objectid, l.year, l.vacbldg, ST_SetSRID(l.geom, 2272) -- Assuming NULL for the geom column
-FROM "landuse_cleanup" l
-JOIN "landuse3" l3 ON l.c_dig3 = l3.cdig3;
-SELECT p.gid, p.cdig3, p.objectid, p.year, p.vacbldg, p.geom, vl.Description AS vacbldg_description
-FROM parcel p
-LEFT JOIN vacbldg vl ON p.vacbldg = vl.vacbldg;
+INSERT INTO parcel (gid, cdig3, objectid, year, vacbldg, geom)
+SELECT 
+    id, 
+    C_DIG3::int, 
+    objectid, 
+    year, 
+    vacbldg, 
+    ST_Transform(geom, 2272)  -- Transforming to the target SRID
+FROM landuse_cleanup;
 
 ```
 ### ERD
