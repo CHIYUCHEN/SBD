@@ -1,6 +1,6 @@
 # Milestone 5: Final Report
 ## Peter Chen
-## Topic: Urban Development and Land Use Patterns in Philadelphia
+## Topic:Urban Development and Land Use Patterns in Philadelphia
 
 ### Project Overview:
 
