@@ -2,7 +2,7 @@
 ## Peter Chen
 ## Topic: Urban Development and Land Use Patterns in Philadelphia
 
-**Project Overview:**
+### Project Overview:
 
 This project centers on the examination of land use data sourced from Philadelphia, focusing on a dataset of 560,104 records retrieved from the [OpenDataPhilly platform](https://opendataphilly.org/datasets/land-use/). The primary aim is to extract meaningful insights by normalizing the data based on the dependent variable's definition. The analysis concentrates on understanding the distribution and attributes of various land use categories, with a specific emphasis on commercial, civic/institutional, and vacant properties.
 
@@ -12,7 +12,7 @@ The second aspect involves scrutinizing civic/institutional land use, particular
 
 The third focus revolves around generating a detailed dataset highlighting census tracts containing vacant land. This dataset goes a step further by providing information on the types of vacant buildings within those tracts. The intention is to provide a nuanced understanding of the distribution and characteristics of vacant land within a specified geographic area. This information is considered valuable for urban planning, development, and policy-making, empowering stakeholders to make more informed decisions regarding the utilization of vacant land and the development potential of specific areas.
 
-**Questions:**
+### Questions:
 
 1. What is/are the census tract(s) with the lowest count of commercial land use, and what is the respective count of commercial land use in each of these tracts?
 
@@ -30,7 +30,7 @@ LIMIT 5;
 ```
 #### Visualization in QGIS
 
-<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Commercial%20Land%20Use%20Count%20by%20Census%20Tract.jpg" alt="Commercial Land Use Count" width="500">
+<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Commercial%20Land%20Use%20Count%20by%20Census%20Tract.jpg" alt="Commercial Land Use Count" width="350">
 
 2. What is the census tract with the largest total area (in square meters) designated as Civic/Institutional land use, specifically for category library area?
 
@@ -49,7 +49,7 @@ LIMIT 1;
 ```
 #### Visualization in QGIS
 
-<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Largest%20Library%20Land%20Use%20Area%20by%20Census%20Tract.jpg" alt="Largest Library Land Use Area" width="500">
+<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Largest%20Library%20Land%20Use%20Area%20by%20Census%20Tract.jpg" alt="Largest Library Land Use Area" width="350">
 
 3. Which census tracts contain vacant land use with vacant buildings recorded within these tracts?
 
@@ -65,7 +65,7 @@ AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
 ```
 #### Visualization in QGIS
 
-<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Vacant%20Land%20by%20Census%20Tract.jpg" alt="Vacant Land by Census Tract" width="500">
+<img src="https://github.com/CHIYUCHEN/SBD/raw/main/Vacant%20Land%20by%20Census%20Tract.jpg" alt="Vacant Land by Census Tract" width="350">
 
 **Data source:**
 1. [Land Use Dataset - OpenDataPhilly](https://opendataphilly.org/datasets/land-use/)
@@ -75,15 +75,13 @@ AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
 1. [Land Use Dataset Metadata](https://metadata.phila.gov/#home/datasetdetails/5543864420583086178c4e74/representationdetails/55438a7f9b989a05172d0cf3/)
 2. [Census Tracts Metadata](https://metadata.phila.gov/#home/datasetdetails/5543867720583086178c4f47/representationdetails/55438aca9b989a05172d0d7a/)
 
-## Normalization Process and ERD
+### Normalization Process and ERD
 
 Normalization is about organizing data to reduce redundancy and dependency. The script below achieves this by splitting information into separate tables and using foreign keys to establish relationships between them, ensuring data consistency and eliminating repetitive information.
 
-### Original Data Table
+#### Original Data Table
 
 The initial data is stored in the table named `landuse`. It contains information about land use categorized by several codes and their respective descriptions.
-
-### Normalization
 
 #### Cleanup Table Creation
 
@@ -288,12 +286,12 @@ SELECT
 FROM landuse_cleanup;
 
 ```
-### ERD
+#### ERD
 <img src="https://github.com/CHIYUCHEN/SBD/raw/main/ERD.jpg" alt="ERD">
 
-## Optimization and Analysis
+### Optimization and Analysis
 
-### 1.Data Normalization and Table Creation
+#### 1.Data Normalization and Table Creation
 •	The landuse_cleanup table is created by filtering data from the landuse table based on certain conditions using c_dig1desc, c_dig2desc and c_dig3desc.
 
 •	This table possibly contains refined, normalized, or cleaned-up data compared to the original landuse table. It might have fewer records due to filtering out specific entries.
@@ -319,7 +317,7 @@ AND CAST(c_dig3desc AS VARCHAR(3)) LIKE CONCAT(c_dig2desc, '%'))
 ORDER BY c_dig1desc, c_dig2desc, c_dig3desc;
 ```
 
-### 2.Index Creation
+#### 2.Index Creation
 •	Indexes are created on columns (c_dig1desc, c_dig2desc, c_dig3desc, vacbldg) used in filtering, joining, and grouping operations.
 
 •	Purpose: Indexes enhance query performance by allowing the database engine to quickly locate relevant rows based on these indexed columns. They act as pointers to speed up data retrieval.
@@ -359,7 +357,7 @@ CREATE INDEX ON landuse_cleanup (c_dig2desc);
 CREATE INDEX ON landuse_cleanup (c_dig3desc);
 CREATE INDEX ON landuse_cleanup (vacbldg);
 ```
-### 3.Query Optimizations and Timings
+#### 3.Query Optimizations and Timings
 
 **Reasoning for Each Index:**
 
@@ -463,7 +461,7 @@ lu.c_dig3desc = '911' -- Vacant land
 AND (lu.vacbldg = '1' OR lu.vacbldg = 'V');
 ```
 
-### 4.	Impact of Indexing:
+#### 4.	Impact of Indexing:
 &nbsp;&nbsp;•	By creating and dropping specific indexes before and after executing queries, the code measures the performance difference, indicating how indexing affects query execution times. <br />
 &nbsp;&nbsp;•	The EXPLAIN ANALYZE command helps evaluate query execution plans and timings, facilitating a comparative analysis of query performance with and without specific indexes. <br />
 &nbsp;&nbsp;•	The code demonstrates a systematic approach to evaluating the impact of indexing on query performance, particularly in the context of spatial data analysis involving census tracts and land use information. <br />
